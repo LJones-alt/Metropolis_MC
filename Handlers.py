@@ -1,16 +1,17 @@
 import numpy as np 
 import random as rand
+import statistics as st
 class LJ:
-    def __new__(ch, eps, sig, x):
+    def __new__(ch, eps, sig):
        # print('Creating new cluster object')
         handler = super().__new__(ch)
         return handler
     
-    def __init__(self, eps, sig, x):
+    def __init__(self, eps, sig):
         self.epsilon = eps
         self.sigma = sig
-        self.x = x
-        self.ljp = self.calculate_ljp(self.x)
+        
+        self.ljp = 0
 
     def calculate_ljp(self,x):
         if (x!=0):
@@ -24,7 +25,7 @@ class LJ:
     def get_total_energy(self, distances):
         self.particles, x = distances.shape
         energies = []
-        energy_sum = 0
+        energy_sum = 0.0
         for b in range(self.particles):
             for a in range(b, self.particles):
                 energies.append(self.calculate_ljp(distances[b,a]))
@@ -74,22 +75,38 @@ class Distances:
 
 
 class ParticleMover:
-    def __init__(self, max, min):
+    def __init__(self, max, min, start_state):
         self.min = min
         self.max = max
-        self.old_array =[]
-        self.new_array = self.move_random()
+        self.old_array = start_state
+        self.new_array = []
         self.moved_particle=[]
        
-    def move_random(self, old_array):
-        new_array = old_array.copy()
+    def move_random(self):
+        new_array = list(self.old_array)
         particles =len(new_array)
         random_particle = rand.randint(0, particles-1)
-        self.moved_particle = old_array[random_particle]
+        self.moved_particle = self.old_array[random_particle]
         self.index = random_particle
         self.moved_direction = [rand.uniform(self.min, self.max), rand.uniform(self.min, self.max), rand.uniform(self.min, self.max)]
         new_array[random_particle]= [self.moved_particle[0] + self.moved_direction[0], self.moved_particle[1] + self.moved_direction[1],self.moved_particle[2] + self.moved_direction[2]]
+        ##print(f"moved particle {random_particle}, by {self.moved_direction}")
         return new_array
 
+class PostProcessing:
+    def __new__(pp, energy):
+        postProcess = super().__new__(pp)
+        return postProcess
+
+    def __init__(self,energy):
+        self.energies = energy
+        self.dev_std = self.std_dev()
+        self.average = self.average_energy()
+        
+    def std_dev(self):
+        return np.std(self.energies)
     
+    def average_energy(self):
+        return st.mean(self.energies)
+ 
     
