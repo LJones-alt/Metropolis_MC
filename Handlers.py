@@ -1,4 +1,5 @@
 import numpy as np 
+import random as rand
 class LJ:
     def __new__(ch, eps, sig, x):
        # print('Creating new cluster object')
@@ -34,16 +35,14 @@ class LJ:
         return energy_sum
     
 class Distances:
-    def __new__(cls, particle_array, lx , ly, lz):
+    def __new__(cls, particle_array, l):
         #print('Creating new distance object')
         cluster = super().__new__(cls)
         return cluster
 
-    def __init__(self, particle_array, lx, ly, lz):
+    def __init__(self, particle_array, l):
         self.ljp =0
-        self.lx =lx
-        self.ly = ly
-        self.lz = lz
+        self.l=l
         self.distance3d = 0
         self.particle_array = particle_array
         self.particles = len(self.particle_array)
@@ -61,7 +60,7 @@ class Distances:
             return 0
 
     def get_particle_distance(self, p1, p2):
-        particle_distance = pow(pow(self.get_delta(p1[0], p2[0], self.lx), 2) + pow(self.get_delta(p1[1], p2[1], self.ly), 2) + pow(self.get_delta(p1[2], p2[2], self.lz),2),0.5)
+        particle_distance = pow(pow(self.get_delta(p1[0], p2[0], self.l), 2) + pow(self.get_delta(p1[1], p2[1], self.l), 2) + pow(self.get_delta(p1[2], p2[2], self.l),2),0.5)
         #print(f"The particle distance is {particle_distance}")
         return particle_distance
     
@@ -75,16 +74,22 @@ class Distances:
 
 
 class ParticleMover:
-    def __new__(pm, eps, sig):
-        print('Creating new cluster object')
-        box = super().__new__(pm)
-        return box
-    
-    def __init__(self, eps, sig):
-        self.epsilon = eps
-        self.sigma = sig
+    def __init__(self, max, min):
+        self.min = min
+        self.max = max
+        self.old_array =[]
+        self.new_array = self.move_random()
+        self.moved_particle=[]
+       
+    def move_random(self, old_array):
+        new_array = old_array.copy()
+        particles =len(new_array)
+        random_particle = rand.randint(0, particles-1)
+        self.moved_particle = old_array[random_particle]
+        self.index = random_particle
+        self.moved_direction = [rand.uniform(self.min, self.max), rand.uniform(self.min, self.max), rand.uniform(self.min, self.max)]
+        new_array[random_particle]= [self.moved_particle[0] + self.moved_direction[0], self.moved_particle[1] + self.moved_direction[1],self.moved_particle[2] + self.moved_direction[2]]
+        return new_array
 
-        self.ljp = self.calculate_ljp()
-      
     
     
