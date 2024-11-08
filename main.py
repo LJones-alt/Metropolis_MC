@@ -14,14 +14,12 @@ from handlers.EnergyHandler import LJ
 from handlers.ParticleHandler import ParticleMover
 from utils.EnergyHolder import Holder
 from utils.FiileHelper import FileHelper
-import rdfpy as rdf
-import matplotlib as plt        
 
 # First, set up the comparision object
 clusterHolder = Holder()
 clusterHolder.l = 2000
-clusterHolder.iterations = 50
-clusterHolder.temp = 120
+clusterHolder.iterations = 1000
+clusterHolder.temp = 298
 # Set up the coordinates of the initial state, set a for Argon
 a=525.6 #pm
 coodinateHandler= CoordinateHandler(a)
@@ -60,14 +58,15 @@ for i in range(clusterHolder.iterations) :
         clusterHolder.current_state = clusterHolder.test_state
         clusterHolder.current_energy = clusterHolder.test_energy
         clusterHolder.energies.append(clusterHolder.test_energy)
-        
+    plthandle.add_snapshot(clusterHolder.current_state)
     print(f"Accepted {acceptanceCounter.get_accepted()}, rejected {acceptanceCounter.get_rejected()}")
     del move_particle
     del test_distancehelper
     # ## increment
 # Save final geometery in text file
+plthandle.animate_plotting()
 fileholder =FileHelper()
-#fileholder.write_list_to_file(clusterHolder.current_state)
+fileholder.write_list_to_file(clusterHolder.current_state,clusterHolder.temp)
 
 # Calculate the averages and Std deviation
 postProcess = PostProcessing(clusterHolder.energies)
@@ -82,6 +81,3 @@ plthandle.plot_all_coords(clusterHolder.current_state)
 
 #plthandle.plotRDF(postProcess.calc_drf(clusterHolder.current_state, 0.1))
 
-g_r , rad = rdf.rdf(clusterHolder.current_state, 0.1)
-plt.plot(rad, g_r, 'o')
-plt.show()

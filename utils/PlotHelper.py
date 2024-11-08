@@ -1,10 +1,12 @@
 import matplotlib.pyplot as plt 
 import mpl_toolkits as tk
 import matplotlib.animation as animation 
+from FiileHelper import FileHelper 
 
 class PlotHandler:
     def __init__(self):
         self.original = []
+        self.array_holder=[]
 
     def plot_all_coords(self, coords):
         fig = plt.figure()
@@ -18,19 +20,14 @@ class PlotHandler:
         
         plt.show()
 
-    def animate_plotting(self, original, updated_position, updated_index):
+    def add_snapshot(self, snap):
+        self.array_holder.append(snap)
+
+    def animate_plotting(self):
         fig = plt.figure()
-        ax = plt.axes(projection ='3d')
-        artists = []
-        for i in range(len(original)):
-            plt_this = original[i]
-            plt_x = plt_this[0]
-            plt_y = plt_this[1]
-            plt_z = plt_this[2]
-            container = ax.plot3D(plt_x, plt_y, plt_z, c='r', marker='o')
-            artists.append(container)
-    
-    def plotRDF(self, g_r, rad):
-        plt.plot(rad, g_r, 'o')
-        plt.show()
+        ax = fig.add_subplot(projection='3d')
         
+        data = self.array_holder[1]
+       
+       
+    

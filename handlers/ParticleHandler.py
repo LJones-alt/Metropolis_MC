@@ -41,12 +41,12 @@ class ParticleMover:
            self.max = 100
 
         elif 80<temp<=150:
+            self.min = -300
+            self.max = 300
+
+        elif 150<temp<=300:
             self.min = -500
             self.max = 500
-
-        elif 150>temp<=300:
-            self.min = -1500
-            self.max = 1500
         else :
             self.min = 0
             self.max = 0
