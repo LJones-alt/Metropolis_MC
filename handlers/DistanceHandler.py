@@ -13,7 +13,10 @@ class Distances:
         self.particle_array = particle_array
         self.particles = len(self.particle_array)
         self.dims =3
-        self.distances = []
+        self.distances = self.get_all_distances()
+
+    def __del__(self):
+        return None
 
     def get_delta(self, k1, k2, l):
         if (k1-k2) < (-0.5*l):
@@ -36,4 +39,5 @@ class Distances:
             for a in range(self.particles):
                 distances[b,a]= self.get_particle_distance(self.particle_array[b], self.particle_array[a])
        # print(distances)
+        self.distances = distances
         return distances

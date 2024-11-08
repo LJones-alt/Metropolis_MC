@@ -9,3 +9,4 @@ class Holder:
         self.l= 2000
         self.energies = []
         self.iterations = 0
+        self.temp = 0
