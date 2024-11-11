@@ -17,13 +17,20 @@ from utils.FileHelper import FileHelper
 
 # First, set up the comparision object
 clusterHolder = Holder()
+'''
+Set these parameters to the values you choose for the simulation:
+l - box size in pm
+iterations - how many iterations to run
+temp - temperature in kelvin
+step size - how often to save the coordinates for later processing
+'''
 clusterHolder.l = 2000
 clusterHolder.iterations = 1000
 clusterHolder.temp = 298
 clusterHolder.step_size=10
-# Set up the coordinates of the initial state, set a for Argon
-a=525.6 #pm
-coodinateHandler= CoordinateHandler(a)
+
+coodinateHandler= CoordinateHandler(525.6) ## this is a in pm
+
 # assign these to the comparision object
 clusterHolder.start_state.coord = coodinateHandler.coords
 clusterHolder.current_state.coord= coodinateHandler.coords ## refernce to original array 
@@ -37,10 +44,13 @@ test_lennard_jones=LJ(0.34, 0.0104)
 # Calculate all the distances between the atoms calculated earlier
 distanceHelper = Distances(clusterHolder.current_state.coord, clusterHolder.l) # calculates all relative distances
 plthandle.original = clusterHolder.start_state.coord
+
 # calculate the energy of the entire system and hold in the cluster onbject
 clusterHolder.start_state.ljp=lennard_jones.get_total_energy(distanceHelper.get_all_distances())
-#clusterHolder.current_state.ljp = clusterHolder.start_state.ljp
+
+# set the current energy to 0 to allow the loop to work
 clusterHolder.current_state.ljp=0
+
 # Now iterate over tiny movements until the iteration threshold is reached
 for i in range(clusterHolder.iterations) : 
 
@@ -66,9 +76,10 @@ for i in range(clusterHolder.iterations) :
         plthandle.add_snapshot(clusterHolder.current_state)
 
     print(f"Accepted {acceptanceCounter.get_accepted()}, rejected {acceptanceCounter.get_rejected()}")
+    # delete the used objects
     del move_particle
     del test_distancehelper
-    # ## increment
+    
 
 #now we have finsished, find the overall energy
 finalDistanceHelper = Distances(clusterHolder.current_state.coord, clusterHolder.l)
