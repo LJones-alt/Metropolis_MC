@@ -1,14 +1,25 @@
+'''
+This is the plotting class, it contains the fuctions needed to make pretty plots
+Init this class, then pass the snapshots from the simulation by add_sapshot(<your coordinate list>)
+To plot a coordinate array, use plot_all_coords(<your coordinate list>)
+
+Todo : add animation and evolving plot functions
+
+Author: Laura Jones
+Contact : Laura.Jones3@liverpool.ac.uk
+
+'''
 import matplotlib.pyplot as plt 
 import mpl_toolkits as tk
 import matplotlib.animation as animation 
-from FiileHelper import FileHelper 
+#from utils import FileHelper 
 
 class PlotHandler:
     def __init__(self):
         self.original = []
         self.array_holder=[]
 
-    def plot_all_coords(self, coords):
+    def plot_all_coords(self, coords : list):
         fig = plt.figure()
         
         ax = plt.axes(projection ='3d')
@@ -20,7 +31,7 @@ class PlotHandler:
         
         plt.show()
 
-    def add_snapshot(self, snap):
+    def add_snapshot(self, snap : list):
         self.array_holder.append(snap)
 
     def animate_plotting(self):

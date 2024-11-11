@@ -13,19 +13,20 @@ from handlers.DistanceHandler import Distances
 from handlers.EnergyHandler import LJ
 from handlers.ParticleHandler import ParticleMover
 from utils.EnergyHolder import Holder
-from utils.FiileHelper import FileHelper
+from utils.FileHelper import FileHelper
 
 # First, set up the comparision object
 clusterHolder = Holder()
 clusterHolder.l = 2000
 clusterHolder.iterations = 1000
 clusterHolder.temp = 298
+clusterHolder.step_size=10
 # Set up the coordinates of the initial state, set a for Argon
 a=525.6 #pm
 coodinateHandler= CoordinateHandler(a)
 # assign these to the comparision object
-clusterHolder.original_array = coodinateHandler.get_all_cords()
-clusterHolder.current_state = coodinateHandler.get_all_cords() ## refernce to original array 
+clusterHolder.start_state.coord = coodinateHandler.coords
+clusterHolder.current_state.coord= coodinateHandler.coords ## refernce to original array 
 
 # Init the objects needed 
 acceptanceCounter = AcceptanceCounter()
@@ -34,49 +35,60 @@ lennard_jones = LJ(0.34, 0.0104)
 test_lennard_jones=LJ(0.34, 0.0104)
 
 # Calculate all the distances between the atoms calculated earlier
-distanceHelper = Distances(coodinateHandler.get_all_cords(), clusterHolder.l) # calculates all relative distances
-plthandle.original = clusterHolder.original_array
+distanceHelper = Distances(clusterHolder.current_state.coord, clusterHolder.l) # calculates all relative distances
+plthandle.original = clusterHolder.start_state.coord
 # calculate the energy of the entire system and hold in the cluster onbject
-clusterHolder.current_energy=lennard_jones.get_total_energy(distanceHelper.distances)
-
+clusterHolder.start_state.ljp=lennard_jones.get_total_energy(distanceHelper.get_all_distances())
+#clusterHolder.current_state.ljp = clusterHolder.start_state.ljp
+clusterHolder.current_state.ljp=0
 # Now iterate over tiny movements until the iteration threshold is reached
 for i in range(clusterHolder.iterations) : 
 
     # move a random particle a random amount in random distance
-    move_particle = ParticleMover(clusterHolder.temp, clusterHolder.current_state, clusterHolder.l)
+    move_particle = ParticleMover(clusterHolder.temp, clusterHolder.current_state.coord, clusterHolder.l)
     # assign to the test arrangement state
-    clusterHolder.test_state=move_particle.move_random()
+    clusterHolder.test_state.coord, clusterHolder.test_state.particle_index=move_particle.move_random()
+    
     # calculate the distances in the new arrangement
-    test_distancehelper = Distances(clusterHolder.test_state, clusterHolder.l)
+    test_distancehelper = Distances(clusterHolder.test_state.coord, clusterHolder.l)
+    clusterHolder.test_state.distances = test_distancehelper.get_new_distances(clusterHolder.test_state.particle_index)
     #calculate the energies and assign to the test energy 
-    clusterHolder.test_energy=test_lennard_jones.get_total_energy(test_distancehelper.distances)
-    ##print(f"old energy{clusterHolder.current_energy}, test :  {clusterHolder.test_energy}")
+    clusterHolder.test_state.ljp=test_lennard_jones.get_new_energy(clusterHolder.test_state )
+   
     # decide to keep or reject the new arrangement
-    keep_current = acceptanceCounter.decide(clusterHolder.current_energy, clusterHolder.test_energy)
+    keep_current = acceptanceCounter.decide(clusterHolder.current_state, clusterHolder.test_state)
     if keep_current :
         # if the new arrangement is chosen, assign the current state to the test state
         clusterHolder.current_state = clusterHolder.test_state
-        clusterHolder.current_energy = clusterHolder.test_energy
-        clusterHolder.energies.append(clusterHolder.test_energy)
-    plthandle.add_snapshot(clusterHolder.current_state)
+        clusterHolder.accepted_energies.append(clusterHolder.test_state.ljp)
+    # Take snapshots
+    if ((i%clusterHolder.step_size)==0):
+        plthandle.add_snapshot(clusterHolder.current_state)
+
     print(f"Accepted {acceptanceCounter.get_accepted()}, rejected {acceptanceCounter.get_rejected()}")
     del move_particle
     del test_distancehelper
     # ## increment
-# Save final geometery in text file
-plthandle.animate_plotting()
-fileholder =FileHelper()
-fileholder.write_list_to_file(clusterHolder.current_state,clusterHolder.temp)
 
-# Calculate the averages and Std deviation
-postProcess = PostProcessing(clusterHolder.energies)
-print(f"Average Energy : {clusterHolder.current_energy}, Averager Accepted energy : {postProcess.average}, Std Deviation of accepted energes : {postProcess.dev_std}")
+#now we have finsished, find the overall energy
+finalDistanceHelper = Distances(clusterHolder.current_state.coord, clusterHolder.l)
+clusterHolder.current_state.distances=finalDistanceHelper.get_all_distances()
+clusterHolder.current_state.ljp=test_lennard_jones.get_total_energy(clusterHolder.current_state.distances)
+
+# Save final geometery in text file
+fileIO = FileHelper()
+fileIO.write_list_to_file(clusterHolder.current_state.coord, int(clusterHolder.temp))
+
+# Calculate the averages and Std deviation - this could be done in a separate file
+postProcess = PostProcessing(test_lennard_jones.energies)
+print(f"Average Energy : {clusterHolder.current_state.ljp}, Averager Accepted energy : {postProcess.average}, Std Deviation of accepted energes : {postProcess.dev_std}")
 print(f"Accepted {acceptanceCounter.get_accepted()}, rejected {acceptanceCounter.get_rejected()}")
 Cv = postProcess.calc_heat_capacity(0.00008617,clusterHolder.temp,3)
 print(f"CV : {Cv}")
-# plot the final arrangement 
 
-plthandle.plot_all_coords(clusterHolder.current_state)
+# Uncomment these for plotting functions 
+
+#plthandle.plot_all_coords(clusterHolder.current_state)
 #PlotHandler.plot_all_coords(clusterHolder.original_array)
 
 #plthandle.plotRDF(postProcess.calc_drf(clusterHolder.current_state, 0.1))

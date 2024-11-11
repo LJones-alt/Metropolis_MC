@@ -1,8 +1,19 @@
+'''
+This class handles moving a particle in a list of coordinates
+Init this class with t (temperature in Kelvin), start_state (list of coordinates) and l (container side length l in pm)
+
+The class will move a particle at random a random distance based on the temperature
+Call move_random() once the class has been initialised to get back an array of new coordinates and the index of the particle moved
+
+This class can be deleted once used to save memory
+Author: Laura Jones
+Contact : Laura.Jones3@liverpool.ac.uk
+'''
 import random as rand
 
 class ParticleMover:
-    def __init__(self, temp, start_state, l):
-        self.min, self.max = self.get_movement_from_cv(temp)
+    def __init__(self, temp: float, start_state:list, l:float):
+        self.min, self.max = self.__get_movement_from_cv(temp)
         self.old_array = start_state
         self.new_array = []
         self.moved_particle=[]
@@ -20,18 +31,20 @@ class ParticleMover:
         self.index = random_particle
         self.moved_direction = [rand.uniform(self.min, self.max), rand.uniform(self.min, self.max), rand.uniform(self.min, self.max)]
         test_coordinate= [self.moved_particle[0] + self.moved_direction[0], self.moved_particle[1] + self.moved_direction[1],self.moved_particle[2] + self.moved_direction[2]]
-        new_array[random_particle] = self.check_for_escape(test_coordinate)
+        new_array[random_particle] = self.__check_for_escape(test_coordinate)
         
         ##print(f"moved particle {random_particle}, by {self.moved_direction}")
-        return new_array
+        return new_array, random_particle
     
-    def check_for_escape(self, test_coord):
+    def __check_for_escape(self, test_coord:list):
         for i in range (len(test_coord)):
             if (test_coord[i] > self.l):
                 test_coord[i] = test_coord[i] - self.l
+            elif (test_coord[i<0]):
+                test_coord[i] = test_coord[i] + self.l
         return test_coord
     
-    def get_movement_from_cv(self, temp):
+    def __get_movement_from_cv(self, temp):
         if temp<=0:
            self.min = 0
            self.max = 0
