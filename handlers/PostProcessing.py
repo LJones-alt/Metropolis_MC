@@ -15,7 +15,7 @@ Contact : Laura.Jones3@liverpool.ac.uk
 '''
 import numpy as np
 import statistics as st
-import rdfpy as rdf
+
 
 class PostProcessing:
     def __new__(pp, energy: list):
